@@ -10,12 +10,18 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <name>Compress Artifacts Plugin</name>
+    <url>https://issues.jenkins-ci.org/browse/JENKINS-6229</url><!-- TODO link to wiki when created -->
     <licenses>
         <license>
             <name>MIT License</name>
             <url>http://www.opensource.org/licenses/mit-license.php</url>
         </license>
     </licenses>
+    <scm>
+        <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
+    </scm>
     <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>
