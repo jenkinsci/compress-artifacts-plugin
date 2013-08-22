@@ -25,10 +25,10 @@
 package org.jenkinsci.plugins.compress_artifacts;
 
 import hudson.Extension;
-import hudson.model.Descriptor;
 import hudson.model.Run;
 import jenkins.model.ArtifactManager;
 import jenkins.model.ArtifactManagerFactory;
+import jenkins.model.ArtifactManagerFactoryDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public final class CompressingArtifactManagerFactory extends ArtifactManagerFactory {
@@ -39,7 +39,7 @@ public final class CompressingArtifactManagerFactory extends ArtifactManagerFact
         return new CompressingArtifactManager(build);
     }
 
-    @Extension public static final class DescriptorImpl extends Descriptor<ArtifactManagerFactory> {
+    @Extension public static final class DescriptorImpl extends ArtifactManagerFactoryDescriptor {
 
         @Override public String getDisplayName() {
             return "Compress Artifacts";
