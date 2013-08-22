@@ -155,7 +155,7 @@ final class CompressingArtifactManager extends ArtifactManager {
 
         @Override public VirtualFile[] list() throws IOException {
             if (!looksLikeDir()) {
-                throw new IOException();
+                return new VirtualFile[0];
             }
             ZipFile zf = new ZipFile(archive());
             try {
