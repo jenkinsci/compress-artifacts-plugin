@@ -10,7 +10,8 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <name>Compress Artifacts Plugin</name>
-    <url>https://issues.jenkins-ci.org/browse/JENKINS-6229</url><!-- TODO link to wiki when created -->
+    <description>Keeps build artifacts compressed to save disk space on the master.</description>
+    <url>https://wiki.jenkins-ci.org/display/JENKINS/Compress+Artifacts+Plugin</url>
     <licenses>
         <license>
             <name>MIT License</name>
