@@ -48,11 +48,13 @@ public class ZipStorageTest {
     private File archive;
     private File content;
     private VirtualFile zs;
+    private VirtualFile canonical;
 
     @Before public void samples() throws Exception {
         archive = new File(tmp.getRoot(), "archive.zip");
         zs = ZipStorage.root(archive);
         content = tmp.newFolder();
+        canonical = VirtualFile.forFile(content);
     }
 
     @Test public void simpleList() throws Exception {
@@ -65,8 +67,12 @@ public class ZipStorageTest {
         artifacts.put("top", "top");
         artifacts.put("dir/sub", "dir/sub");
         ZipStorage.archive(archive, new FilePath(content), new Launcher.LocalLauncher(l), l, artifacts);
-        assertTrue(zs.isDirectory());
-        VirtualFile[] list = zs.list();
+        doSimpleList(canonical);
+        doSimpleList(zs);
+    }
+    private void doSimpleList(VirtualFile vf) throws Exception {
+        assertTrue(vf.isDirectory());
+        VirtualFile[] list = vf.list();
         Arrays.sort(list);
         assertEquals(2, list.length);
         VirtualFile dir = list[0];
@@ -85,7 +91,7 @@ public class ZipStorageTest {
         assertFalse(sub.isDirectory());
         assertTrue(sub.isFile());
         assertEquals("sub", IOUtils.toString(sub.open()));
-        assertEquals(sub, zs.child("dir/sub"));
+        assertEquals(sub, vf.child("dir/sub"));
     }
 
 }
