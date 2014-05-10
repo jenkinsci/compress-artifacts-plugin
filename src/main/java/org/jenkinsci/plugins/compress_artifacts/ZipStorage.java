@@ -27,6 +27,7 @@ package org.jenkinsci.plugins.compress_artifacts;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.BuildListener;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -42,6 +43,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import org.apache.tools.ant.types.selectors.SelectorUtils;
+
 import jenkins.util.VirtualFile;
 
 final class ZipStorage extends VirtualFile {
@@ -163,7 +167,35 @@ final class ZipStorage extends VirtualFile {
     }
     
     @Override public String[] list(String glob) throws IOException {
-        throw new IOException("TODO not implemented");
+    	if (! looksLikeDir()) {
+    		throw new IOException("Not a directory");
+    	}
+    	
+    	// we should always be given a pattern to match against to return useful results 
+    	if (glob==null) {
+    		throw new IllegalArgumentException("No glob received to match against");
+    	}
+    	
+    	ZipFile zf = new ZipFile(archive);
+        try {
+            Set<String> files = new HashSet<String>();
+            Enumeration<? extends ZipEntry> entries = zf.entries();
+            while (entries.hasMoreElements()) {
+            	ZipEntry entry = entries.nextElement();
+            	if (! entry.isDirectory()) {
+            		String name = entry.toString();
+            		if (SelectorUtils.match(glob, name)) {
+            			System.out.println("adding file " + entry);
+            			files.add(name);
+            		}
+            	}
+            }
+            System.out.println("finished processing files");
+            return files.toArray(new String[files.size()]);
+        } finally {
+            zf.close();
+        }
+    	
     }
     
     @Override public VirtualFile child(String name) {

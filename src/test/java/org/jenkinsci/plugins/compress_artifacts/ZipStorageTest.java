@@ -93,5 +93,44 @@ public class ZipStorageTest {
         assertEquals("sub", IOUtils.toString(sub.open()));
         assertEquals(sub, vf.child("dir/sub"));
     }
+    
+    @Test public void testStringList() throws Exception {
+        FileUtils.writeStringToFile(new File(content, "top"), "top");
+        File dir1 = new File(content, "folder1");
+        assertTrue(dir1.mkdir());
+        FileUtils.writeStringToFile(new File(dir1, "file1.txt"), "file1Content");
+        
+        File dir2 = new File(content,"folder2");
+        assertTrue(dir2.mkdir());
+        FileUtils.writeStringToFile(new File(dir2,"file2.log"), "file2Content");
+        
+        BuildListener l = new StreamBuildListener(System.out, Charset.defaultCharset());
+        Map<String,String> artifacts = new HashMap<String,String>();
+        artifacts.put("top", "top");
+        artifacts.put("folder1/file1.txt", "folder1/file1.txt");
+        artifacts.put("folder2/file2.log", "folder2/file2.log");
+        ZipStorage.archive(archive, new FilePath(content), new Launcher.LocalLauncher(l), l, artifacts);
+
+        String [] testVals = zs.list("**");
+        assertTrue(testVals.length == 3);
+        
+        testVals = zs.list("**/*.log");
+        assertEquals("expect only file to be file2.log",testVals[0],"folder2/file2.log");
+        assertTrue(testVals.length==1);
+        
+        testVals = zs.list("folder*/*");
+        assertTrue(testVals.length==2);
+        
+        testVals = zs.list("");
+        assertTrue(testVals.length==0);
+        
+        boolean exceptionRaised = false;
+        try {
+        testVals = zs.list(null);
+        } catch (IllegalArgumentException e) {
+        	exceptionRaised = true;
+        }
+        assertTrue("We expect an exception from illegal input",exceptionRaised);
+    }
 
 }
