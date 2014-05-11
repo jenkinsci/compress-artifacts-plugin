@@ -185,12 +185,10 @@ final class ZipStorage extends VirtualFile {
             	if (! entry.isDirectory()) {
             		String name = entry.toString();
             		if (SelectorUtils.match(glob, name)) {
-            			System.out.println("adding file " + entry);
             			files.add(name);
             		}
             	}
             }
-            System.out.println("finished processing files");
             return files.toArray(new String[files.size()]);
         } finally {
             zf.close();
