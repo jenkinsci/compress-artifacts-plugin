@@ -170,11 +170,9 @@ final class ZipStorage extends VirtualFile {
     	if (! looksLikeDir()) {
     		throw new IOException("Not a directory");
     	}
-    	
-    	// we should always be given a pattern to match against to return useful results 
-    	if (glob==null) {
-    		throw new IllegalArgumentException("No glob received to match against");
-    	}
+
+    	// prepend path to the glob to get the right relative matches
+    	String relativeGlob= path + glob;    	
     	
     	ZipFile zf = new ZipFile(archive);
         try {
@@ -184,8 +182,8 @@ final class ZipStorage extends VirtualFile {
             	ZipEntry entry = entries.nextElement();
             	if (! entry.isDirectory()) {
             		String name = entry.toString();
-            		if (SelectorUtils.match(glob, name)) {
-            			files.add(name);
+            		if (SelectorUtils.match(relativeGlob, name)) {
+            			files.add(name.substring(path.length()));
             		}
             	}
             }
