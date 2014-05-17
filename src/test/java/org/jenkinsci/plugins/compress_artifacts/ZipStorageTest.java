@@ -134,12 +134,6 @@ public class ZipStorageTest {
         
         testVals = vf.list("folder*/*");
         assertTrue(testVals.length==2);
-        
-        //You get a list of all files including folders in the canonical response here, not sure why
-        //testVals = vf.list("");
-        //assertTrue(testVals.length==6); 
-        testVals = vf.list(null);
-        //assertTrue(testVals.length==6);
 
 	}
 	

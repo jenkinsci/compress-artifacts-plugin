@@ -171,8 +171,10 @@ final class ZipStorage extends VirtualFile {
     		throw new IOException("Not a directory");
     	}
 
-    	// prepend path to the glob to get the right relative matches
-    	String relativeGlob= path + glob;    	
+    	// canonical implementation treats null glob the same as empty string
+    	if (glob==null) {
+    		glob="";
+    	}
     	
     	ZipFile zf = new ZipFile(archive);
         try {
@@ -180,10 +182,10 @@ final class ZipStorage extends VirtualFile {
             Enumeration<? extends ZipEntry> entries = zf.entries();
             while (entries.hasMoreElements()) {
             	ZipEntry entry = entries.nextElement();
-            	if (! entry.isDirectory()) {
-            		String name = entry.toString();
-            		if (SelectorUtils.match(relativeGlob, name)) {
-            			files.add(name.substring(path.length()));
+            	if ((! entry.isDirectory()) && entry.getName().startsWith(path)) {
+            		String name = entry.toString().substring(path.length());
+            		if (SelectorUtils.match(glob, name)) {
+            			files.add(name);
             		}
             	}
             }
