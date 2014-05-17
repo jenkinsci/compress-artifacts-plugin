@@ -28,15 +28,21 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.BuildListener;
 import hudson.model.StreamBuildListener;
+
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
 import jenkins.util.VirtualFile;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+
 import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -93,5 +99,54 @@ public class ZipStorageTest {
         assertEquals("sub", IOUtils.toString(sub.open()));
         assertEquals(sub, vf.child("dir/sub"));
     }
+    
+    @Test public void testStringList() throws Exception {
+        FileUtils.writeStringToFile(new File(content, "top"), "top");
+        File dir1 = new File(content, "folder1");
+        assertTrue(dir1.mkdir());
+        FileUtils.writeStringToFile(new File(dir1, "file1.txt"), "file1Content");
+        
+        File dir2 = new File(content,"folder2");
+        assertTrue(dir2.mkdir());
+        FileUtils.writeStringToFile(new File(dir2,"file2.log"), "file2Content");
+        
+        BuildListener l = new StreamBuildListener(System.out, Charset.defaultCharset());
+        Map<String,String> artifacts = new HashMap<String,String>();
+        artifacts.put("top", "top");
+        artifacts.put("folder1/file1.txt", "folder1/file1.txt");
+        artifacts.put("folder2/file2.log", "folder2/file2.log");
+        ZipStorage.archive(archive, new FilePath(content), new Launcher.LocalLauncher(l), l, artifacts);
+        
+        doTopLevelStringList(canonical);
+        doTopLevelStringList(zs);
+
+        doFolder1StringList(zs.child("folder1"));
+        doFolder1StringList(VirtualFile.forFile(dir1));
+    }
+
+	private void doTopLevelStringList(VirtualFile vf) throws IOException {
+		String [] testVals = vf.list("**");
+        assertTrue(testVals.length == 3);
+        
+        testVals = vf.list("**/*.log");
+        assertEquals("expect only file to be file2.log",testVals[0],"folder2/file2.log");
+        assertTrue(testVals.length==1);
+        
+        testVals = vf.list("folder*/*");
+        assertTrue(testVals.length==2);
+
+	}
+	
+	private void doFolder1StringList(VirtualFile vf) throws IOException {
+		String [] testVals = vf.list("**");
+        assertTrue(testVals.length == 1);
+        
+        testVals = vf.list("*log");
+        assertTrue("Expect no files matching this pattern",testVals.length==0);
+        
+        testVals = vf.list("*.txt");
+        assertTrue("length =" + testVals.length, testVals.length==1);
+        
+	}
 
 }
