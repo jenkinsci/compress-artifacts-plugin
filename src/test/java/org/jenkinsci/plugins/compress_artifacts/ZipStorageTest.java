@@ -100,7 +100,7 @@ public class ZipStorageTest {
         assertEquals(sub, vf.child("dir/sub"));
     }
     
-    @Test public void testStringList() throws Exception {
+    @Test public void globList() throws Exception {
         FileUtils.writeStringToFile(new File(content, "top"), "top");
         File dir1 = new File(content, "folder1");
         assertTrue(dir1.mkdir());
@@ -117,36 +117,24 @@ public class ZipStorageTest {
         artifacts.put("folder2/file2.log", "folder2/file2.log");
         ZipStorage.archive(archive, new FilePath(content), new Launcher.LocalLauncher(l), l, artifacts);
         
-        doTopLevelStringList(canonical);
-        doTopLevelStringList(zs);
-
-        doFolder1StringList(zs.child("folder1"));
-        doFolder1StringList(VirtualFile.forFile(dir1));
+        doGlobList(canonical);
+        doGlobList(zs);
     }
-
-	private void doTopLevelStringList(VirtualFile vf) throws IOException {
-		String [] testVals = vf.list("**");
-        assertTrue(testVals.length == 3);
-        
-        testVals = vf.list("**/*.log");
-        assertEquals("expect only file to be file2.log",testVals[0],"folder2/file2.log");
-        assertTrue(testVals.length==1);
-        
-        testVals = vf.list("folder*/*");
-        assertTrue(testVals.length==2);
-
+	private void doGlobList(VirtualFile vf) throws IOException {
+        assertGlobList(vf, "**", "top", "folder1/file1.txt", "folder2/file2.log");
+        assertGlobList(vf, "**/*.log", "folder2/file2.log");
+        assertGlobList(vf, "folder*/*", "folder1/file1.txt", "folder2/file2.log");
+        VirtualFile child = vf.child("folder1");
+        assertGlobList(child, "**", "file1.txt");
+        assertGlobList(child, "*log");
+        assertGlobList(child, "*.txt", "file1.txt");
+        // TODO canonical implementation yields all files including folders when null or empty glob passed; what is correct? (cf. 9c3be89)
 	}
-	
-	private void doFolder1StringList(VirtualFile vf) throws IOException {
-		String [] testVals = vf.list("**");
-        assertTrue(testVals.length == 1);
-        
-        testVals = vf.list("*log");
-        assertTrue("Expect no files matching this pattern",testVals.length==0);
-        
-        testVals = vf.list("*.txt");
-        assertTrue("length =" + testVals.length, testVals.length==1);
-        
-	}
+    private static void assertGlobList(VirtualFile vf, String glob, String... expected) throws IOException {
+        Arrays.sort(expected);
+        String[] actual = vf.list(glob);
+        Arrays.sort(actual);
+        assertEquals(Arrays.asList(expected), Arrays.asList(actual));
+    }
 
 }
