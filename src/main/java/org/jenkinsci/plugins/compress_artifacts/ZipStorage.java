@@ -44,9 +44,11 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.apache.tools.ant.types.selectors.SelectorUtils;
-
 import jenkins.util.VirtualFile;
+
+import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.util.URIUtil;
+import org.apache.tools.ant.types.selectors.SelectorUtils;
 
 final class ZipStorage extends VirtualFile {
 
@@ -82,8 +84,10 @@ final class ZipStorage extends VirtualFile {
     
     @Override public URI toURI() {
         try {
-            return new URI(null, path, null);
+            return new URI(null, URIUtil.encodePath(path), null);
         } catch (URISyntaxException x) {
+            throw new AssertionError(x);
+        } catch (URIException x) {
             throw new AssertionError(x);
         }
     }

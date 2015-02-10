@@ -69,18 +69,25 @@ public class CompressArtifactsTest {
 
         List<Run<FreeStyleProject, FreeStyleBuild>.Artifact> artifacts = build.getArtifacts();
         assertEquals("number of artifacts archived", 1, artifacts.size());
+        Run<FreeStyleProject, FreeStyleBuild>.Artifact artifact = artifacts.get(0);
+        assertEquals("file.txt", artifact.getFileName());
+        assertEquals(7, artifact.getFileSize());
     }
 
     @Test @Bug(26858)
     public void useSpecialCharsInPathName() throws Exception {
+        final String filename = "x:y[z].txt";
+
         FreeStyleProject p = j.createFreeStyleProject();
-        p.getBuildersList().add(new WorkspaceWriter("localhost:80.txt", "content"));
-        p.getBuildersList().add(new WorkspaceWriter("a[b].txt", "content"));
+        p.getBuildersList().add(new WorkspaceWriter(filename, "content"));
         p.getPublishersList().add(new ArtifactArchiver("*", null, false));
         FreeStyleBuild build = j.buildAndAssertSuccess(p);
 
         List<Run<FreeStyleProject, FreeStyleBuild>.Artifact> artifacts = build.getArtifacts();
-        assertEquals("number of artifacts archived", 2, artifacts.size());
+        assertEquals("number of artifacts archived", 1, artifacts.size());
+        Run<FreeStyleProject, FreeStyleBuild>.Artifact artifact = artifacts.get(0);
+        assertEquals(filename, artifact.getFileName());
+        assertEquals(7, artifact.getFileSize());
     }
 
     // Stolen from https://github.com/jenkinsci/jenkins/commit/cb5845db29bea10afd26c4425a44bc569ee75a7a
