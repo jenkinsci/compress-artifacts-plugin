@@ -7,7 +7,7 @@
     </parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>compress-artifacts</artifactId>
-    <version>1.2</version>
+    <version>1.3-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <name>Compress Artifacts Plugin</name>
     <description>Keeps build artifacts compressed to save disk space on the master.</description>
@@ -22,7 +22,7 @@
         <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
-      <tag>compress-artifacts-1.2</tag>
+      <tag>HEAD</tag>
   </scm>
     <repositories>
         <repository>
