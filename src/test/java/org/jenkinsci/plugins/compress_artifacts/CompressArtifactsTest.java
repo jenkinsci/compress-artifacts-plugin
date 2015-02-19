@@ -23,7 +23,10 @@
  */
 package org.jenkinsci.plugins.compress_artifacts;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
 import static org.junit.Assert.assertEquals;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
@@ -34,6 +37,7 @@ import hudson.tasks.ArtifactArchiver;
 import hudson.util.DescribableList;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import jenkins.model.ArtifactManagerFactory;
@@ -88,6 +92,42 @@ public class CompressArtifactsTest {
         Run<FreeStyleProject, FreeStyleBuild>.Artifact artifact = artifacts.get(0);
         assertEquals(filename, artifact.getFileName());
         assertEquals(7, artifact.getFileSize());
+    }
+
+    @Test
+    public void archiveThousandsFiles() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+                FilePath nested = ws.child("there/are/some/subdirs/here");
+                nested.mkdirs();
+
+                for (int i = 0; i < 2500; i++) {
+                    String name = "file." + Integer.toString(i) + ".txt";
+                    ws.child(name).write(name, "UTF-8");
+                    nested.child("nested." + name).write(name, "UTF-8");
+                }
+                return true;
+            }
+        });
+        p.getPublishersList().add(new ArtifactArchiver("**/*", null, false));
+        FreeStyleBuild build = j.buildAndAssertSuccess(p);
+
+        List<Run<FreeStyleProject, FreeStyleBuild>.Artifact> artifacts = build.getArtifacts();
+        assertEquals("number of artifacts archived", 5000, artifacts.size());
+
+        // read the content
+        for (Run<FreeStyleProject, FreeStyleBuild>.Artifact a: artifacts) {
+            byte[] buffer = new byte[20];
+            InputStream stream = build.getArtifactManager().root().child(a.relativePath).open();
+            try {
+                int read = stream.read(buffer);
+                assertThat(new String(buffer, 0, read), endsWith("txt"));
+            } finally {
+                stream.close();
+            }
+        }
     }
 
     // Stolen from https://github.com/jenkinsci/jenkins/commit/cb5845db29bea10afd26c4425a44bc569ee75a7a
