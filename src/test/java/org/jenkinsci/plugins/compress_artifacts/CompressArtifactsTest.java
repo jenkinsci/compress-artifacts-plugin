@@ -45,6 +45,7 @@ import jenkins.model.ArtifactManagerFactoryDescriptor;
 import jenkins.model.ArtifactManagerConfiguration;
 import jenkins.model.Jenkins;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -119,14 +120,8 @@ public class CompressArtifactsTest {
 
         // read the content
         for (Run<FreeStyleProject, FreeStyleBuild>.Artifact a: artifacts) {
-            byte[] buffer = new byte[20];
-            InputStream stream = build.getArtifactManager().root().child(a.relativePath).open();
-            try {
-                int read = stream.read(buffer);
-                assertThat(new String(buffer, 0, read), endsWith("txt"));
-            } finally {
-                stream.close();
-            }
+            String content = IOUtils.toString(build.getArtifactManager().root().child(a.relativePath).open());
+            assertThat(content, endsWith("txt"));
         }
     }
 

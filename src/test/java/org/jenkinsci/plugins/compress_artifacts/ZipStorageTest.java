@@ -30,6 +30,7 @@ import hudson.model.BuildListener;
 import hudson.model.StreamBuildListener;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -63,21 +64,31 @@ public class ZipStorageTest {
         canonical = VirtualFile.forFile(content);
     }
 
-    @Test public void simpleList() throws Exception {
+    @Test public void basics() throws Exception {
         FileUtils.writeStringToFile(new File(content, "top"), "top");
         File dirF = new File(content, "dir");
         assertTrue(dirF.mkdir());
         FileUtils.writeStringToFile(new File(dirF, "sub"), "sub");
-        BuildListener l = new StreamBuildListener(System.out, Charset.defaultCharset());
+        new File(content, "dir/nested").mkdir();
+
         Map<String,String> artifacts = new HashMap<String,String>();
         artifacts.put("top", "top");
         artifacts.put("dir/sub", "dir/sub");
-        ZipStorage.archive(archive, new FilePath(content), new Launcher.LocalLauncher(l), l, artifacts);
-        doSimpleList(canonical);
-        doSimpleList(zs);
+        artifacts.put("dir/nested", "dir/nested");
+
+        archive(artifacts);
+
+        doBasics(canonical);
+        doBasics(zs);
+
+        // This is broken in VirtualFile#FileVF
+        assertEquals(null, zs.getParent());
     }
-    private void doSimpleList(VirtualFile vf) throws Exception {
+
+    private void doBasics(VirtualFile vf) throws Exception {
         assertTrue(vf.isDirectory());
+        assertTrue(vf.exists());
+
         VirtualFile[] list = vf.list();
         Arrays.sort(list);
         assertEquals(2, list.length);
@@ -85,19 +96,39 @@ public class ZipStorageTest {
         assertEquals("dir", dir.getName());
         assertTrue(dir.isDirectory());
         assertFalse(dir.isFile());
+        assertFalse(vf.child("dir").isFile());
+        assertTrue(dir.exists());
+        assertEquals(vf, dir.getParent());
+
         VirtualFile top = list[1];
         assertEquals("top", top.getName());
         assertFalse(top.isDirectory());
         assertTrue(top.isFile());
+        assertTrue(top.exists());
+        assertEquals(vf, top.getParent());
         assertEquals("top", IOUtils.toString(top.open()));
+
         list = dir.list();
-        assertEquals(1, list.length);
-        VirtualFile sub = list[0];
+        Arrays.sort(list);
+        assertEquals(2, list.length);
+        VirtualFile sub = list[1];
         assertEquals("sub", sub.getName());
         assertFalse(sub.isDirectory());
         assertTrue(sub.isFile());
+        assertTrue(sub.exists());
+        assertEquals(dir, sub.getParent());
         assertEquals("sub", IOUtils.toString(sub.open()));
         assertEquals(sub, vf.child("dir/sub"));
+
+        VirtualFile nested = list[0];
+        assertTrue(nested.isDirectory());
+        assertFalse(nested.isFile());
+        assertTrue(nested.exists());
+        assertEquals(dir, nested.getParent());
+
+        final VirtualFile doesNotExist = vf.child("there_is_no_such_child");
+        assertFalse(doesNotExist.isFile());
+        assertFalse(doesNotExist.exists());
     }
     
     @Test public void globList() throws Exception {
@@ -110,12 +141,11 @@ public class ZipStorageTest {
         assertTrue(dir2.mkdir());
         FileUtils.writeStringToFile(new File(dir2,"file2.log"), "file2Content");
         
-        BuildListener l = new StreamBuildListener(System.out, Charset.defaultCharset());
         Map<String,String> artifacts = new HashMap<String,String>();
         artifacts.put("top", "top");
         artifacts.put("folder1/file1.txt", "folder1/file1.txt");
         artifacts.put("folder2/file2.log", "folder2/file2.log");
-        ZipStorage.archive(archive, new FilePath(content), new Launcher.LocalLauncher(l), l, artifacts);
+        archive(artifacts);
         
         doGlobList(canonical);
         doGlobList(zs);
@@ -137,4 +167,48 @@ public class ZipStorageTest {
         assertEquals(Arrays.asList(expected), Arrays.asList(actual));
     }
 
+    @Test public void readError() throws Exception {
+        new File(content, "dir").mkdir();
+        Map<String,String> artifacts = new HashMap<String,String>();
+        artifacts.put("dir", "dir");
+        archive(artifacts);
+
+        doReadDir(canonical);
+        doReadDir(zs);
+
+        doReadNonexistingDir(canonical);
+        doReadNonexistingDir(zs);
+    }
+    private void doReadNonexistingDir(VirtualFile vf) {
+        try {
+            vf.child("there_is_none").open();
+            fail();
+        } catch (IOException ex) {
+            assertTrue(ex instanceof FileNotFoundException);
+        }
+    }
+    private void doReadDir(VirtualFile vf) {
+        try {
+            vf.list()[0].open();
+            fail();
+        } catch (IOException ex) {
+            assertTrue(ex instanceof FileNotFoundException);
+        }
+    }
+
+    @Test public void operateOnNonexistingFiles() throws Exception {
+        archive(new HashMap<String,String>());
+
+        doRead(canonical);
+        doRead(zs);
+    }
+    private void doRead(VirtualFile vf) throws Exception {
+        assertEquals(0, vf.child("thre_is_none").lastModified());
+        assertEquals(0, vf.child("thre_is_none").length());
+    }
+
+    private void archive(Map<String, String> artifacts) throws Exception {
+        BuildListener l = new StreamBuildListener(System.out, Charset.defaultCharset());
+        ZipStorage.archive(archive, new FilePath(content), new Launcher.LocalLauncher(l), l, artifacts);
+    }
 }

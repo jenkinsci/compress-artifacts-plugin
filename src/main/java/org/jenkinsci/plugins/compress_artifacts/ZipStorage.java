@@ -91,9 +91,23 @@ final class ZipStorage extends VirtualFile {
             throw new AssertionError(x);
         }
     }
-    
+
     @Override public VirtualFile getParent() {
-        return new ZipStorage(archive, path.replaceFirst("(/?[^/]+)/?$", "$1"));
+        int length = path.length();
+        if (length == 0) return null; // Root has no parent
+
+        int last = path.lastIndexOf('/');
+        if (last < 0) return root(archive); // Top level file
+
+        if (last + 1 != length) {
+            return new ZipStorage(archive, path.substring(0, last + 1));
+        }
+
+        // trailing '/' found
+        last = path.lastIndexOf('/', last - 1);
+        if (last == -1) return root(archive); // Top level dir
+
+        return new ZipStorage(archive, path.substring(0, last + 1));
     }
 
     private boolean looksLikeDir() {
@@ -238,13 +252,14 @@ final class ZipStorage extends VirtualFile {
     
     @Override public InputStream open() throws IOException {
         if (looksLikeDir()) {
-            throw new IOException();
+            // That is what java.io.FileInputStream.open throws
+            throw new FileNotFoundException(this + " (Is a directory)");
         }
         final ZipFile zf = new ZipFile(archive);
         ZipEntry entry = zf.getEntry(path);
         if (entry == null) {
             zf.close();
-            throw new FileNotFoundException(path);
+            throw new FileNotFoundException(path + " (No such file or directory)");
         }
         return new FilterInputStream(zf.getInputStream(entry)) {
             @Override public void close() throws IOException {
