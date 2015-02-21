@@ -34,8 +34,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import jenkins.util.VirtualFile;
 
@@ -205,6 +210,101 @@ public class ZipStorageTest {
     private void doRead(VirtualFile vf) throws Exception {
         assertEquals(0, vf.child("thre_is_none").lastModified());
         assertEquals(0, vf.child("thre_is_none").length());
+    }
+
+    @Test
+    public void avoidZipExceptionWhileWriting() throws Exception {
+        FileUtils.writeStringToFile(new File(content, "file"), "content");
+
+        final Entry<String, String> validArtifact = Collections.singletonMap("file", "file").entrySet().iterator().next();
+
+        // Simulate archiving that takes forever serving valid artifact and then block forever on the next.
+        final Map<String,String> artifacts = new HashMap<String,String>() {
+            @Override
+            public Set<Map.Entry<String, String>> entrySet() {
+                return new HashSet<Map.Entry<String, String>>() {
+                    @Override
+                    public Iterator<Map.Entry<String, String>> iterator() {
+                        return new Iterator<Map.Entry<String, String>>() {
+                            private boolean block = false;
+
+                            public boolean hasNext() {
+                                return true;
+                            }
+
+                            public Map.Entry<String, String> next() {
+                                if (!block) {
+                                    block = true;
+                                    return validArtifact;
+                                }
+
+                                synchronized (this) {
+                                    try {
+                                        this.wait(); // Block forever
+                                        throw new AssertionError();
+                                    } catch (InterruptedException ex) {
+                                        // Expected at cleanup time
+                                    }
+                                }
+
+                                return validArtifact;
+                            }
+
+                            public void remove() {
+                                throw new UnsupportedOperationException();
+                            }
+                        };
+                    }
+                };
+            }
+        };
+
+        // start archiving
+        Thread compressor = new Thread("compressing-thread") {
+            @Override
+            public void run() {
+                try {
+                    archive(artifacts);
+                } catch (Exception ex) {
+                    throw new Error(ex);
+                }
+            }
+        };
+
+        compressor.start();
+        try {
+            Thread.sleep(1000);
+
+            assertTrue(compressor.isAlive());
+
+            assertArrayEquals(new String[0], zs.list());
+            assertArrayEquals(new VirtualFile[0], zs.list("*"));
+        } finally {
+            compressor.stop();
+        }
+    }
+
+    @Test // This can happen when it was not yet (fully) written or it was deleted
+    public void supporMissingArchiveFile() throws Exception {
+        assertArrayEquals(new String[0], zs.list());
+        assertArrayEquals(new VirtualFile[0], zs.list("*"));
+        assertFalse(zs.exists());
+        assertFalse(zs.isFile());
+        assertFalse(zs.isDirectory());
+
+        VirtualFile child = zs.child("child");
+        assertFalse(child.exists());
+        assertFalse(child.isFile());
+        assertFalse(child.isDirectory());
+        assertEquals(0, child.length());
+        assertEquals(0, child.lastModified());
+
+        try {
+            child.open();
+            fail();
+        } catch (IOException ex) {
+            assertTrue(ex instanceof FileNotFoundException);
+        }
     }
 
     private void archive(Map<String, String> artifacts) throws Exception {

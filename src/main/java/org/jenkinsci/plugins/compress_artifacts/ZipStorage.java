@@ -56,14 +56,17 @@ final class ZipStorage extends VirtualFile {
         return new ZipStorage(archive, "");
     }
 
+    // TODO support updating entries
     static void archive(File archive, FilePath workspace, Launcher launcher, BuildListener listener, Map<String,String> artifacts) throws IOException, InterruptedException {
-        // TODO support updating entries
-        OutputStream os = new FileOutputStream(archive);
+        // Use temporary file for writing, rename when done
+        File writingArchive = new File(archive.getAbsolutePath() + ".writing");
+        OutputStream os = new FileOutputStream(writingArchive);
         try {
             workspace.zip(os, new FilePath.ExplicitlySpecifiedDirScanner(artifacts));
         } finally {
             os.close();
         }
+        writingArchive.renameTo(archive);
     }
 
     static boolean delete(File archive) throws IOException, InterruptedException {
@@ -115,7 +118,7 @@ final class ZipStorage extends VirtualFile {
     }
     
     @Override public boolean isDirectory() throws IOException {
-        if (!looksLikeDir()) {
+        if (!looksLikeDir() || !archive.exists()) {
             return false;
         }
         ZipFile zf = new ZipFile(archive);
@@ -135,7 +138,7 @@ final class ZipStorage extends VirtualFile {
     }
     
     @Override public boolean isFile() throws IOException {
-        if (looksLikeDir()) {
+        if (looksLikeDir() || !archive.exists()) {
             return false;
         }
         ZipFile zf = new ZipFile(archive);
@@ -147,6 +150,8 @@ final class ZipStorage extends VirtualFile {
     }
     
     @Override public boolean exists() throws IOException {
+        if (!archive.exists()) return false;
+
         ZipFile zf = new ZipFile(archive);
         try {
             Enumeration<? extends ZipEntry> entries = zf.entries();
@@ -164,7 +169,7 @@ final class ZipStorage extends VirtualFile {
     }
     
     @Override public VirtualFile[] list() throws IOException {
-        if (!looksLikeDir()) {
+        if (!looksLikeDir() || !archive.exists()) {
             return new VirtualFile[0];
         }
         ZipFile zf = new ZipFile(archive);
@@ -185,16 +190,16 @@ final class ZipStorage extends VirtualFile {
     }
     
     @Override public String[] list(String glob) throws IOException {
-    	if (! looksLikeDir()) {
-    		throw new IOException("Not a directory");
-    	}
+        if (!looksLikeDir() || !archive.exists()) {
+            return new String[0];
+        }
 
-    	// canonical implementation treats null glob the same as empty string
-    	if (glob==null) {
-    		glob="";
-    	}
-    	
-    	ZipFile zf = new ZipFile(archive);
+        // canonical implementation treats null glob the same as empty string
+        if (glob==null) {
+            glob="";
+        }
+
+        ZipFile zf = new ZipFile(archive);
         try {
             Set<String> files = new HashSet<String>();
             Enumeration<? extends ZipEntry> entries = zf.entries();
@@ -211,7 +216,6 @@ final class ZipStorage extends VirtualFile {
         } finally {
             zf.close();
         }
-    	
     }
     
     @Override public VirtualFile child(String name) {
@@ -227,6 +231,8 @@ final class ZipStorage extends VirtualFile {
     }
     
     @Override public long length() throws IOException {
+        if (!archive.exists()) return 0;
+
         ZipFile zf = new ZipFile(archive);
         try {
             ZipEntry entry = zf.getEntry(path);
@@ -237,6 +243,8 @@ final class ZipStorage extends VirtualFile {
     }
     
     @Override public long lastModified() throws IOException {
+        if (!archive.exists()) return 0;
+
         ZipFile zf = new ZipFile(archive);
         try {
             ZipEntry entry = zf.getEntry(path);
@@ -251,6 +259,8 @@ final class ZipStorage extends VirtualFile {
     }
     
     @Override public InputStream open() throws IOException {
+        if (!archive.exists()) throw new FileNotFoundException(path + " (No such file or directory)");
+
         if (looksLikeDir()) {
             // That is what java.io.FileInputStream.open throws
             throw new FileNotFoundException(this + " (Is a directory)");
@@ -267,5 +277,4 @@ final class ZipStorage extends VirtualFile {
             }
         };
     }
-
 }
