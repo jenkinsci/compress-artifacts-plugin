@@ -12,6 +12,11 @@
     <name>Compress Artifacts Plugin</name>
     <description>Keeps build artifacts compressed to save disk space on the master.</description>
     <url>https://wiki.jenkins-ci.org/display/JENKINS/Compress+Artifacts+Plugin</url>
+
+    <properties>
+        <truezip.version>7.7.8</truezip.version>
+    </properties>
+
     <licenses>
         <license>
             <name>MIT License</name>
@@ -22,7 +27,7 @@
         <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
-      <tag>HEAD</tag>
+        <tag>HEAD</tag>
     </scm>
     <developers>
       <developer>
@@ -31,6 +36,18 @@
         <email>ogondza@gmail.com</email>
       </developer>
     </developers>
+    <dependencies>
+        <dependency>
+            <groupId>de.schlichtherle.truezip</groupId>
+            <artifactId>truezip-driver-zip</artifactId>
+            <version>${truezip.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.schlichtherle.truezip</groupId>
+            <artifactId>truezip-file</artifactId>
+            <version>${truezip.version}</version>
+        </dependency>
+    </dependencies>
     <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>
