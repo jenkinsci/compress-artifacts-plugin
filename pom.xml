@@ -23,7 +23,14 @@
         <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
       <tag>HEAD</tag>
-  </scm>
+    </scm>
+    <developers>
+      <developer>
+        <id>olivergondza</id>
+        <name>Oliver Gondža</name>
+        <email>ogondza@gmail.com</email>
+      </developer>
+    </developers>
     <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>
