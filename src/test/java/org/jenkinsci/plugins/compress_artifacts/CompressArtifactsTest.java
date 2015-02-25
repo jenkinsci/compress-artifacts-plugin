@@ -120,8 +120,12 @@ public class CompressArtifactsTest {
 
         // read the content
         for (Run<FreeStyleProject, FreeStyleBuild>.Artifact a: artifacts) {
-            String content = IOUtils.toString(build.getArtifactManager().root().child(a.relativePath).open());
-            assertThat(content, endsWith("txt"));
+            final InputStream artifactStream = build.getArtifactManager().root().child(a.relativePath).open();
+            try {
+                assertThat(IOUtils.toString(artifactStream), endsWith("txt"));
+            } finally {
+                artifactStream.close();
+            }
         }
     }
 

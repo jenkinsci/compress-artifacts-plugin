@@ -52,6 +52,8 @@ import org.apache.tools.ant.types.selectors.SelectorUtils;
 import de.schlichtherle.truezip.file.TArchiveDetector;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TVFS;
+import de.schlichtherle.truezip.zip.ZipEntry;
+import de.schlichtherle.truezip.zip.ZipFile;
 
 final class ZipStorage extends VirtualFile {
 
@@ -281,10 +283,21 @@ final class ZipStorage extends VirtualFile {
             zf.close();
             throw new FileNotFoundException(path + " (No such file or directory)");
         }
-        return new FilterInputStream(zf.getInputStream(entry)) {
-            @Override public void close() throws IOException {
-                zf.close();
-            }
-        };
+
+        return new EntryInputStream(zf, entry);
+    }
+
+    private static final class EntryInputStream extends FilterInputStream {
+        private final @Nonnull ZipFile archive;
+        private EntryInputStream(ZipFile archive, ZipEntry entry) throws IOException {
+            super(archive.getInputStream(entry));
+            this.archive = archive;
+        }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            archive.close();
+        }
     }
 }
