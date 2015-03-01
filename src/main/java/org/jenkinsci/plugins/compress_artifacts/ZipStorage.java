@@ -30,25 +30,30 @@ import hudson.model.BuildListener;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+
+import javax.annotation.Nonnull;
 
 import jenkins.util.VirtualFile;
 
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
+
+import de.schlichtherle.truezip.file.TArchiveDetector;
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.file.TVFS;
+import de.schlichtherle.truezip.zip.ZipEntry;
+import de.schlichtherle.truezip.zip.ZipFile;
 
 final class ZipStorage extends VirtualFile {
 
@@ -59,14 +64,21 @@ final class ZipStorage extends VirtualFile {
     // TODO support updating entries
     static void archive(File archive, FilePath workspace, Launcher launcher, BuildListener listener, Map<String,String> artifacts) throws IOException, InterruptedException {
         // Use temporary file for writing, rename when done
-        File writingArchive = new File(archive.getAbsolutePath() + ".writing");
-        OutputStream os = new FileOutputStream(writingArchive);
-        try {
-            workspace.zip(os, new FilePath.ExplicitlySpecifiedDirScanner(artifacts));
-        } finally {
-            os.close();
+        File tempArchive = new File(archive.getAbsolutePath() + ".writing.zip");
+
+        TFile zip = new TFile(tempArchive, new TArchiveDetector("zip"));
+        zip.mkdir(); // Create new archive file
+        for (Entry<String, String> afs: artifacts.entrySet()) {
+            FilePath src = workspace.child(afs.getKey());
+            TFile dst = new TFile(zip, afs.getValue(), TArchiveDetector.NULL);
+            if (src.isDirectory()) {
+                dst.mkdirs();
+            } else {
+                TFile.cp(src.read(), dst);
+            }
         }
-        writingArchive.renameTo(archive);
+        TVFS.umount(zip);
+        tempArchive.renameTo(archive);
     }
 
     static boolean delete(File archive) throws IOException, InterruptedException {
@@ -206,7 +218,7 @@ final class ZipStorage extends VirtualFile {
             while (entries.hasMoreElements()) {
             	ZipEntry entry = entries.nextElement();
             	if ((! entry.isDirectory()) && entry.getName().startsWith(path)) {
-            		String name = entry.toString().substring(path.length());
+            		String name = entry.getName().substring(path.length());
             		if (SelectorUtils.match(glob, name)) {
             			files.add(name);
             		}
@@ -257,7 +269,7 @@ final class ZipStorage extends VirtualFile {
     @Override public boolean canRead() throws IOException {
         return true;
     }
-    
+
     @Override public InputStream open() throws IOException {
         if (!archive.exists()) throw new FileNotFoundException(path + " (No such file or directory)");
 
@@ -271,10 +283,21 @@ final class ZipStorage extends VirtualFile {
             zf.close();
             throw new FileNotFoundException(path + " (No such file or directory)");
         }
-        return new FilterInputStream(zf.getInputStream(entry)) {
-            @Override public void close() throws IOException {
-                zf.close();
-            }
-        };
+
+        return new EntryInputStream(zf, entry);
+    }
+
+    private static final class EntryInputStream extends FilterInputStream {
+        private final @Nonnull ZipFile archive;
+        private EntryInputStream(ZipFile archive, ZipEntry entry) throws IOException {
+            super(archive.getInputStream(entry));
+            this.archive = archive;
+        }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            archive.close();
+        }
     }
 }
