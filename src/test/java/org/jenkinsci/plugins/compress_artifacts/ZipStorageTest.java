@@ -47,6 +47,7 @@ import jenkins.util.VirtualFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
@@ -305,6 +306,31 @@ public class ZipStorageTest {
         } catch (IOException ex) {
             assertTrue(ex instanceof FileNotFoundException);
         }
+    }
+
+    @Test
+    public void specialCaracters() throws Exception {
+        String dirname = "Příliš_žluťoučký_kůň";
+        String filename = "úpěl_ďábelské_ódy";
+
+        File subdir = new File(content, dirname);
+        subdir.mkdirs();
+
+        FileUtils.writeStringToFile(new File(subdir, filename), "content");
+
+        String fullname = dirname + "/" + filename;
+        archive(Collections.singletonMap(fullname, fullname));
+
+        testSpecialCaracters(canonical);
+        testSpecialCaracters(zs);
+    }
+
+    private void testSpecialCaracters(VirtualFile vf) throws Exception {
+        assertEquals(1, vf.list().length);
+        VirtualFile subdir = vf.child("Příliš_žluťoučký_kůň");
+        assertTrue(subdir.exists());
+        assertEquals(1, subdir.list().length);
+        assertTrue(subdir.child("úpěl_ďábelské_ódy").exists());
     }
 
     private void archive(Map<String, String> artifacts) throws Exception {
