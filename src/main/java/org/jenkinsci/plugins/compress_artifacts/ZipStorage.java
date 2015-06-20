@@ -30,11 +30,9 @@ import hudson.model.BuildListener;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -62,20 +60,30 @@ import de.schlichtherle.truezip.zip.ZipFile;
 
 final class ZipStorage extends VirtualFile {
 
+    // JarDriver is a ZipDriver that uses UTF-8 for entry names
+    private static final TArchiveDetector DETECTOR = new TArchiveDetector("zip", new JarDriver(IOPoolLocator.SINGLETON));
+
     static VirtualFile root(File archive) {
         return new ZipStorage(archive, "");
     }
 
-    // TODO support updating entries. Hint: e4cf3284f14c919fb6bd95bfb147180569500623
+    // TODO support updating entries
     static void archive(File archive, FilePath workspace, Launcher launcher, BuildListener listener, Map<String,String> artifacts) throws IOException, InterruptedException {
         // Use temporary file for writing, rename when done
         File tempArchive = new File(archive.getAbsolutePath() + ".writing.zip");
-        OutputStream os = new FileOutputStream(tempArchive);
-        try {
-            workspace.zip(os, new FilePath.ExplicitlySpecifiedDirScanner(artifacts));
-        } finally {
-            os.close();
+
+        TFile zip = new TFile(tempArchive, DETECTOR);
+        zip.mkdir(); // Create new archive file
+        for (Entry<String, String> afs: artifacts.entrySet()) {
+            FilePath src = workspace.child(afs.getKey());
+            TFile dst = new TFile(zip, afs.getValue(), TArchiveDetector.NULL);
+            if (src.isDirectory()) {
+                dst.mkdirs();
+            } else {
+                TFile.cp(src.read(), dst);
+            }
         }
+        TVFS.umount(zip);
         tempArchive.renameTo(archive);
     }
 
