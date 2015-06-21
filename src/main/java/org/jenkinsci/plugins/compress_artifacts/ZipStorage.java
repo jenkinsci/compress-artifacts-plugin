@@ -30,16 +30,16 @@ import hudson.model.BuildListener;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -50,18 +50,10 @@ import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 
-import de.schlichtherle.truezip.file.TArchiveDetector;
-import de.schlichtherle.truezip.file.TFile;
-import de.schlichtherle.truezip.file.TVFS;
-import de.schlichtherle.truezip.fs.archive.zip.JarDriver;
-import de.schlichtherle.truezip.socket.sl.IOPoolLocator;
 import de.schlichtherle.truezip.zip.ZipEntry;
 import de.schlichtherle.truezip.zip.ZipFile;
 
 final class ZipStorage extends VirtualFile {
-
-    // JarDriver is a ZipDriver that uses UTF-8 for entry names
-    private static final TArchiveDetector DETECTOR = new TArchiveDetector("zip", new JarDriver(IOPoolLocator.SINGLETON));
 
     static VirtualFile root(File archive) {
         return new ZipStorage(archive, "");
@@ -72,18 +64,13 @@ final class ZipStorage extends VirtualFile {
         // Use temporary file for writing, rename when done
         File tempArchive = new File(archive.getAbsolutePath() + ".writing.zip");
 
-        TFile zip = new TFile(tempArchive, DETECTOR);
-        zip.mkdir(); // Create new archive file
-        for (Entry<String, String> afs: artifacts.entrySet()) {
-            FilePath src = workspace.child(afs.getKey());
-            TFile dst = new TFile(zip, afs.getValue(), TArchiveDetector.NULL);
-            if (src.isDirectory()) {
-                dst.mkdirs();
-            } else {
-                TFile.cp(src.read(), dst);
-            }
+        OutputStream os = new FileOutputStream(tempArchive);
+        try {
+            workspace.archive(TrueZipArchiver.FACTORY, os, new FilePath.ExplicitlySpecifiedDirScanner(artifacts));
+        } finally {
+            os.close();
         }
-        TVFS.umount(zip);
+
         tempArchive.renameTo(archive);
     }
 
