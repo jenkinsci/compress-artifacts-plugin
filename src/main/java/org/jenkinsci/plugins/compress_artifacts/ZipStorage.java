@@ -41,6 +41,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
 
@@ -281,7 +283,12 @@ final class ZipStorage extends VirtualFile {
     }
 
     private static final class EntryInputStream extends FilterInputStream {
+
+        private static final Logger LOGGER = Logger.getLogger(EntryInputStream.class.getName());
+
         private final @Nonnull ZipFile archive;
+        private Exception acquired = new Exception("Opened by:");
+
         private EntryInputStream(ZipFile archive, ZipEntry entry) throws IOException {
             super(archive.getInputStream(entry));
             this.archive = archive;
@@ -291,6 +298,24 @@ final class ZipStorage extends VirtualFile {
         public void close() throws IOException {
             super.close();
             archive.close();
+            synchronized (this) {
+                acquired = null;
+            }
+        }
+
+        @Override
+        protected void finalize() throws Throwable {
+            synchronized (this) {
+                if (acquired != null) {
+                    try {
+                        LOGGER.log(Level.WARNING, "InputStream created by ZipStorage#open() not closed properly", acquired);
+                        acquired = null;
+                        close();
+                    } catch (Throwable ex) {
+                        LOGGER.log(Level.WARNING, "Failed to finalize", ex);
+                    }
+                }
+            }
         }
     }
 }

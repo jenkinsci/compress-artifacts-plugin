@@ -32,6 +32,7 @@ import hudson.model.StreamBuildListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
@@ -112,7 +113,7 @@ public class ZipStorageTest {
         assertTrue(top.isFile());
         assertTrue(top.exists());
         assertEquals(vf, top.getParent());
-        assertEquals("top", IOUtils.toString(top.open()));
+        assertEquals("top", read(top));
 
         list = dir.list();
         Arrays.sort(list);
@@ -123,7 +124,7 @@ public class ZipStorageTest {
         assertTrue(sub.isFile());
         assertTrue(sub.exists());
         assertEquals(dir, sub.getParent());
-        assertEquals("sub", IOUtils.toString(sub.open()));
+        assertEquals("sub", read(sub));
         assertEquals(sub, vf.child("dir/sub"));
 
         VirtualFile nested = list[0];
@@ -135,6 +136,15 @@ public class ZipStorageTest {
         final VirtualFile doesNotExist = vf.child("there_is_no_such_child");
         assertFalse(doesNotExist.isFile());
         assertFalse(doesNotExist.exists());
+    }
+
+    private String read(VirtualFile vf) throws IOException {
+        InputStream open = vf.open();
+        try {
+            return IOUtils.toString(open);
+        } finally {
+            open.close();
+        }
     }
     
     @Test public void globList() throws Exception {
