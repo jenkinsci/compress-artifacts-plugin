@@ -13,7 +13,7 @@
     <url>https://wiki.jenkins-ci.org/display/JENKINS/Compress+Artifacts+Plugin</url>
 
     <properties>
-        <truezip.version>7.7.8</truezip.version>
+        <truezip.version>7.7.10</truezip.version>
     </properties>
 
     <licenses>
