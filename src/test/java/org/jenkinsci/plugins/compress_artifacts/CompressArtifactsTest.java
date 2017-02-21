@@ -25,14 +25,12 @@ package org.jenkinsci.plugins.compress_artifacts;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
-import static org.hamcrest.Matchers.iterableWithSize;
 import static org.junit.Assert.assertEquals;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.BuildListener;
-import hudson.model.Computer;
 import hudson.model.FreeStyleBuild;
 import hudson.model.AbstractBuild;
 import hudson.model.FreeStyleProject;
@@ -45,8 +43,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ForkJoinPool;
 
 import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.ArtifactManagerFactoryDescriptor;
@@ -58,11 +54,12 @@ import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Bug;
 import org.jvnet.hudson.test.HudsonHomeLoader;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestEnvironment;
+import org.jvnet.hudson.test.recipes.WithTimeout;
 
 public class CompressArtifactsTest {
 
@@ -99,7 +96,7 @@ public class CompressArtifactsTest {
         assertEquals(7, artifact.getFileSize());
     }
 
-    @Test @Bug(26858)
+    @Test @Issue("JENKINS-26858")
     public void useSpecialCharsInPathName() throws Exception {
         final String filename = "x:y[z].txt";
 
@@ -149,7 +146,7 @@ public class CompressArtifactsTest {
         }
     }
 
-    @Test @Bug(27042)
+    @Test @Issue("JENKINS-27042") @WithTimeout(0)
     public void archiveLargerThan4GInTotal() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         final int artifactCount = 700;
