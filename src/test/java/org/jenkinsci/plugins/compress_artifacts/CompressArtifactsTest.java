@@ -26,6 +26,8 @@ package org.jenkinsci.plugins.compress_artifacts;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
 import static org.junit.Assert.assertEquals;
+
+import com.google.common.io.NullOutputStream;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
@@ -42,6 +44,7 @@ import hudson.util.DescribableList;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 
 import jenkins.model.ArtifactManagerFactory;
@@ -175,6 +178,12 @@ public class CompressArtifactsTest {
         assertThat(Functions.humanReadableByteSize(length), length, Matchers.greaterThanOrEqualTo(4L * 1024 * 1024 * 1024));
 
         assertThat(build.getArtifacts(), Matchers.<Run<FreeStyleProject, FreeStyleBuild>.Artifact>iterableWithSize(artifactCount));
+        InputStream open = build.getArtifactManager().root().child("stuff" + (artifactCount - 1)).open();
+        try {
+            IOUtils.copy(open, new NullOutputStream());
+        } finally {
+            open.close();
+        }
 
 
 //        CompressingArtifactManager.setup(jenkins);
@@ -210,6 +219,36 @@ public class CompressArtifactsTest {
 //                job.name
 //        ));
 //        assertThat(length, greaterThanOrEqualTo(4L * 1024 * 1024 * 1024));
+    }
+
+    @Test
+    public void archiveSingleLargeFile() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath target = build.getWorkspace().child("out");
+                long length = 2L * 1024 * 1024 * 1024;
+                final FilePath src = new FilePath(Which.jarFile(Jenkins.class));
+
+                final OutputStream out = target.write();
+                try {
+                    do {
+                        IOUtils.copy(src.read(), out);
+                    } while (target.length() < length);
+                } finally {
+                    out.close();
+                }
+                return true;
+            }
+        });
+        p.getPublishersList().add(new ArtifactArchiver("**/*", null, false));
+        FreeStyleBuild build = j.buildAndAssertSuccess(p);
+        InputStream out = build.getArtifactManager().root().child("out").open();
+        try {
+            IOUtils.copy(out, new NullOutputStream());
+        } finally {
+             out.close();
+        }
     }
 
     // Stolen from https://github.com/jenkinsci/jenkins/commit/cb5845db29bea10afd26c4425a44bc569ee75a7a
