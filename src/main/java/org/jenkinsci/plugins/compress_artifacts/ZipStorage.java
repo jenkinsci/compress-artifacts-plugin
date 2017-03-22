@@ -94,7 +94,9 @@ final class ZipStorage extends VirtualFile {
     
     @Override public URI toURI() {
         try {
-            return new URI(null, URIUtil.encodePath(path), null);
+            // If no scheme is provided, beginning of the path is parsed as the scheme causing validation problems.
+            // Using some scheme to workaround that + prepending prefix to avoid empty URI path.
+            return new URI("zip", "./" + URIUtil.encodePath(path), null);
         } catch (URISyntaxException x) {
             throw new AssertionError(x);
         } catch (URIException x) {
@@ -187,7 +189,8 @@ final class ZipStorage extends VirtualFile {
                 ZipEntry entry = entries.nextElement();
                 String p = entry.getName();
                 if (p.startsWith(path)) {
-                    files.add(new ZipStorage(archive, path + p.substring(path.length()).replaceFirst("/.+", "/")));
+                    String pth = path + p.substring(path.length()).replaceFirst("/.+", "/");
+                    files.add(new ZipStorage(archive, pth));
                 }
             }
             return files.toArray(new VirtualFile[files.size()]);

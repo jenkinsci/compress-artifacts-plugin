@@ -101,17 +101,17 @@ public class CompressArtifactsTest {
 
     @Test @Issue("JENKINS-26858")
     public void useSpecialCharsInPathName() throws Exception {
-        final String filename = "x:y[z].txt";
+        final String filename = "2017-03-21_04:25:03/x:y[z].txt";
 
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new WorkspaceWriter(filename, "content"));
-        p.getPublishersList().add(new ArtifactArchiver("*", null, false));
+        p.getPublishersList().add(new ArtifactArchiver("**/*", null, false));
         FreeStyleBuild build = j.buildAndAssertSuccess(p);
 
         List<Run<FreeStyleProject, FreeStyleBuild>.Artifact> artifacts = build.getArtifacts();
         assertEquals("number of artifacts archived", 1, artifacts.size());
         Run<FreeStyleProject, FreeStyleBuild>.Artifact artifact = artifacts.get(0);
-        assertEquals(filename, artifact.getFileName());
+        assertEquals(filename, artifact.relativePath);
         assertEquals(7, artifact.getFileSize());
     }
 
