@@ -95,7 +95,7 @@ public class ZipStorageTest {
     private void doBasics(VirtualFile vf) throws Exception {
         assertTrue(vf.isDirectory());
         assertTrue(vf.exists());
-        assertEquals("zip:./", vf.toURI().getPath());
+        vf.toURI(); // No Exception
 
         VirtualFile[] list = vf.list();
         Arrays.sort(list);
@@ -104,7 +104,7 @@ public class ZipStorageTest {
         assertEquals("dir", dir.getName());
         assertTrue(dir.isDirectory());
         assertFalse(dir.isFile());
-        assertEquals("zip:./dir/" , dir.toURI().getPath());
+        vf.toURI(); // No Exception
         assertFalse(vf.child("dir").isFile());
         assertTrue(dir.exists());
         assertEquals(vf, dir.getParent());
