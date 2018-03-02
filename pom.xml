@@ -3,7 +3,8 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>2.9</version>
+        <version>3.5</version>
+        <relativePath />
     </parent>
     <artifactId>compress-artifacts</artifactId>
     <version>1.11-SNAPSHOT</version>
@@ -13,14 +14,15 @@
     <url>https://wiki.jenkins-ci.org/display/JENKINS/Compress+Artifacts+Plugin</url>
 
     <properties>
-        <jenkins.version>1.580</jenkins.version>
-        <jenkins-test-harness.version>2.18</jenkins-test-harness.version>
-        <java.level>7</java.level>
+        <jenkins-core.version>2.110-20180228.232138-2</jenkins-core.version> <!-- TODO https://github.com/jenkinsci/jenkins/pull/3302 -->
+        <jenkins-war.version>2.110-20180228.232235-2</jenkins-war.version>
+        <java.level>8</java.level>
         <concurrency>2</concurrency>
         <surefire.useFile>false</surefire.useFile>
         <findbugs.failOnError>false</findbugs.failOnError>
 
         <truezip.version>7.7.10</truezip.version>
+        <workflow-api-plugin.version>2.27-20180302.223707-2</workflow-api-plugin.version> <!-- TODO https://github.com/jenkinsci/workflow-api-plugin/pull/67 -->
     </properties>
 
     <licenses>
@@ -47,11 +49,29 @@
             <groupId>de.schlichtherle.truezip</groupId>
             <artifactId>truezip-driver-zip</artifactId>
             <version>${truezip.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>de.schlichtherle.truezip</groupId>
             <artifactId>truezip-file</artifactId>
             <version>${truezip.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>structs</artifactId>
+            <version>1.10</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-api</artifactId>
+            <version>${workflow-api-plugin.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <repositories>

@@ -149,6 +149,7 @@ public class ZipStorageTest {
         }
     }
     
+    @Deprecated
     @Test public void globList() throws Exception {
         FileUtils.writeStringToFile(new File(content, "top"), "top");
         File dir1 = new File(content, "folder1");
@@ -168,6 +169,7 @@ public class ZipStorageTest {
         doGlobList(canonical);
         doGlobList(zs);
     }
+    @Deprecated
 	private void doGlobList(VirtualFile vf) throws IOException {
         assertGlobList(vf, "**", "top", "folder1/file1.txt", "folder2/file2.log");
         assertGlobList(vf, "**/*.log", "folder2/file2.log");
@@ -176,8 +178,8 @@ public class ZipStorageTest {
         assertGlobList(child, "**", "file1.txt");
         assertGlobList(child, "*log");
         assertGlobList(child, "*.txt", "file1.txt");
-        // TODO canonical implementation yields all files including folders when null or empty glob passed; what is correct? (cf. 9c3be89)
 	}
+    @Deprecated
     private static void assertGlobList(VirtualFile vf, String glob, String... expected) throws IOException {
         Arrays.sort(expected);
         String[] actual = vf.list(glob);

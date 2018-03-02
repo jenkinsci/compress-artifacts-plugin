@@ -51,6 +51,7 @@ import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.ArtifactManagerFactoryDescriptor;
 import jenkins.model.ArtifactManagerConfiguration;
 import jenkins.model.Jenkins;
+import jenkins.model.WorkspaceWriter;
 
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.Matchers;
@@ -251,24 +252,4 @@ public class CompressArtifactsTest {
         }
     }
 
-    // Stolen from https://github.com/jenkinsci/jenkins/commit/cb5845db29bea10afd26c4425a44bc569ee75a7a
-    // TODO delete when available in core version plugin depends on
-    private final class WorkspaceWriter extends TestBuilder {
-
-        private final String path;
-        private final String content;
-
-        public WorkspaceWriter(String path, String content) {
-            this.path = path;
-            this.content = content;
-        }
-
-        @Override
-        public boolean perform(
-                AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener
-        ) throws InterruptedException, IOException {
-            build.getWorkspace().child(path).write(content, "UTF-8");
-            return true;
-        }
-    }
 }
