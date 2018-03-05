@@ -48,7 +48,6 @@ import jenkins.util.VirtualFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
@@ -201,18 +200,18 @@ public class ZipStorageTest {
     }
     private void doReadNonexistingDir(VirtualFile vf) {
         try {
-            vf.child("there_is_none").open();
-            fail();
+            VirtualFile child = vf.child("there_is_none");
+            fail("expected " + child + " to not exist but got: " + IOUtils.toString(child.open()));
         } catch (IOException ex) {
-            assertTrue(ex instanceof FileNotFoundException);
+            // good
         }
     }
-    private void doReadDir(VirtualFile vf) {
+    private void doReadDir(VirtualFile vf) throws IOException {
         try {
-            vf.list()[0].open();
-            fail();
+            VirtualFile child = vf.list()[0];
+            fail("expected " + child + " to be a directory but got: " + IOUtils.toString(child.open()));
         } catch (IOException ex) {
-            assertTrue(ex instanceof FileNotFoundException);
+            // good
         }
     }
 
