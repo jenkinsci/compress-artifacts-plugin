@@ -25,6 +25,7 @@
 package org.jenkinsci.plugins.compress_artifacts;
 
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.BuildListener;
 import hudson.model.StreamBuildListener;
@@ -51,6 +52,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -325,6 +327,8 @@ public class ZipStorageTest {
 
     @Test
     public void specialCaracters() throws Exception {
+        assumeFalse(Functions.isWindows());
+
         String dirname = "Příliš_žluťoučký_kůň";
         String filename = "úpěl_ďábelské_ódy";
 

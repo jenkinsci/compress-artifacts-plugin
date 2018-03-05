@@ -55,7 +55,7 @@ import jenkins.model.WorkspaceWriter;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.Matchers;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assume.assumeThat;
+import static org.junit.Assume.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -92,6 +92,8 @@ public class CompressArtifactsTest {
 
     @Test @Issue("JENKINS-26858")
     public void useSpecialCharsInPathName() throws Exception {
+        assumeFalse(Functions.isWindows());
+
         final String filename = "2017-03-21_04:25:03/x:y[z].txt";
 
         FreeStyleProject p = j.createFreeStyleProject();
