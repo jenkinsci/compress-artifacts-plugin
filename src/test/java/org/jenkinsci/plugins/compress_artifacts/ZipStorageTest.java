@@ -42,6 +42,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import jenkins.util.VirtualFile;
 
@@ -183,7 +185,7 @@ public class ZipStorageTest {
         Arrays.sort(expected);
         String[] actual = vf.list(glob);
         Arrays.sort(actual);
-        assertEquals(Arrays.asList(expected), Arrays.asList(actual));
+        assertEquals(new TreeSet<>(Arrays.asList(expected)), Arrays.stream(vf.list(glob)).map(r -> r.replace('\\', '/')).collect(Collectors.toSet()));
     }
 
     @Test public void readError() throws Exception {
