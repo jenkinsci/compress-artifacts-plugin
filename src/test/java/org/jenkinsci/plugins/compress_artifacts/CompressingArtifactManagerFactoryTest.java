@@ -23,6 +23,7 @@
  */
 package org.jenkinsci.plugins.compress_artifacts;
 
+import hudson.Functions;
 import org.jenkinsci.plugins.workflow.ArtifactManagerTest;
 import org.junit.Test;
 import org.junit.Rule;
@@ -35,7 +36,7 @@ public class CompressingArtifactManagerFactoryTest {
 
     @Test
     public void smokes() throws Exception {
-        ArtifactManagerTest.run(r, new CompressingArtifactManagerFactory());
+        ArtifactManagerTest.run(r, new CompressingArtifactManagerFactory(), !Functions.isWindows());
     }
 
 }

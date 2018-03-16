@@ -22,7 +22,7 @@
         <findbugs.failOnError>false</findbugs.failOnError>
 
         <truezip.version>7.7.10</truezip.version>
-        <workflow-api-plugin.version>2.27-20180314.181920-4</workflow-api-plugin.version> <!-- TODO https://github.com/jenkinsci/workflow-api-plugin/pull/67 -->
+        <workflow-api-plugin.version>2.27-20180316.183624-8</workflow-api-plugin.version> <!-- TODO https://github.com/jenkinsci/workflow-api-plugin/pull/67 -->
     </properties>
 
     <licenses>
