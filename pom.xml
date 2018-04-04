@@ -22,7 +22,7 @@
         <findbugs.failOnError>false</findbugs.failOnError>
 
         <truezip.version>7.7.10</truezip.version>
-        <workflow-api-plugin.version>2.27-20180402.200639-11</workflow-api-plugin.version> <!-- TODO https://github.com/jenkinsci/workflow-api-plugin/pull/67 -->
+        <workflow-api-plugin.version>2.27-20180404.164626-12</workflow-api-plugin.version> <!-- TODO https://github.com/jenkinsci/workflow-api-plugin/pull/67 -->
     </properties>
 
     <licenses>
@@ -77,6 +77,24 @@
             <artifactId>workflow-api</artifactId>
             <version>${workflow-api-plugin.version}</version>
             <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.test</groupId>
+            <artifactId>docker-fixtures</artifactId>
+            <version>1.7-20180404.162022-1</version> <!-- TODO https://github.com/jenkinsci/docker-fixtures/pull/19 -->
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>ssh-slaves</artifactId>
+            <version>1.26</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>jdk-tool</artifactId>
+            <version>1.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
