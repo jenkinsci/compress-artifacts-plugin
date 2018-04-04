@@ -22,7 +22,7 @@
         <findbugs.failOnError>false</findbugs.failOnError>
 
         <truezip.version>7.7.10</truezip.version>
-        <workflow-api-plugin.version>2.27-20180404.164626-12</workflow-api-plugin.version> <!-- TODO https://github.com/jenkinsci/workflow-api-plugin/pull/67 -->
+        <workflow-api-plugin.version>2.27-20180404.204940-13</workflow-api-plugin.version> <!-- TODO https://github.com/jenkinsci/workflow-api-plugin/pull/67 -->
     </properties>
 
     <licenses>
@@ -82,7 +82,7 @@
         <dependency>
             <groupId>org.jenkins-ci.test</groupId>
             <artifactId>docker-fixtures</artifactId>
-            <version>1.7-20180404.162022-1</version> <!-- TODO https://github.com/jenkinsci/docker-fixtures/pull/19 -->
+            <version>1.7-20180404.203821-2</version> <!-- TODO https://github.com/jenkinsci/docker-fixtures/pull/19 -->
             <scope>test</scope>
         </dependency>
         <dependency>

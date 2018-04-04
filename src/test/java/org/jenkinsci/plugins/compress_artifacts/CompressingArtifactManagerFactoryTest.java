@@ -25,6 +25,8 @@ package org.jenkinsci.plugins.compress_artifacts;
 
 import hudson.Functions;
 import org.jenkinsci.plugins.workflow.ArtifactManagerTest;
+import org.jenkinsci.test.acceptance.docker.DockerImage;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -34,9 +36,16 @@ public class CompressingArtifactManagerFactoryTest {
     @Rule
     public JenkinsRule r = new JenkinsRule();
 
+    private static DockerImage image;
+
+    @BeforeClass
+    public static void doPrepareImage() throws Exception {
+        image = ArtifactManagerTest.prepareImage();
+    }
+
     @Test
     public void smokes() throws Exception {
-        ArtifactManagerTest.run(r, new CompressingArtifactManagerFactory(), !Functions.isWindows());
+        ArtifactManagerTest.run(r, new CompressingArtifactManagerFactory(), !Functions.isWindows(), image);
     }
 
 }
