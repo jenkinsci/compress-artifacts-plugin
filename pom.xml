@@ -14,8 +14,7 @@
     <url>https://wiki.jenkins-ci.org/display/JENKINS/Compress+Artifacts+Plugin</url>
 
     <properties>
-        <jenkins-core.version>2.118-20180416.205358-1</jenkins-core.version> <!-- TODO https://github.com/jenkinsci/jenkins/pull/3302 -->
-        <jenkins-war.version>2.118-20180416.205448-1</jenkins-war.version>
+        <jenkins.version>2.118</jenkins.version>
         <java.level>8</java.level>
         <concurrency>2</concurrency>
         <surefire.useFile>false</surefire.useFile>
