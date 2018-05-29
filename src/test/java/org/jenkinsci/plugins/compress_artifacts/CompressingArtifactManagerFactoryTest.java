@@ -45,7 +45,7 @@ public class CompressingArtifactManagerFactoryTest {
 
     @Test
     public void smokes() throws Exception {
-        ArtifactManagerTest.run(r, new CompressingArtifactManagerFactory(), !Functions.isWindows(), image);
+        ArtifactManagerTest.artifactArchiveAndDelete(r, new CompressingArtifactManagerFactory(), !Functions.isWindows(), image);
     }
 
 }
