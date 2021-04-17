@@ -31,7 +31,6 @@ import com.google.common.io.NullOutputStream;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.AbstractBuild;
@@ -51,31 +50,23 @@ import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.ArtifactManagerFactoryDescriptor;
 import jenkins.model.ArtifactManagerConfiguration;
 import jenkins.model.Jenkins;
+import jenkins.model.WorkspaceWriter;
 
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.Matchers;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.HudsonHomeLoader;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
-import org.jvnet.hudson.test.TestEnvironment;
 import org.jvnet.hudson.test.recipes.WithTimeout;
 
 public class CompressArtifactsTest {
 
-    // We need to accumulate 4GB+ data and then archive it. That might not fit in everyone's /tmp partition so using ./target instead
-    @Rule public JenkinsRule j = new JenkinsRule().with(new HudsonHomeLoader() {
-        public File allocate() throws Exception {
-            File file = new File("target/CompressArtifactsTest-" + TestEnvironment.get().description().getMethodName());
-            if (file.exists()) {
-                Util.deleteRecursive(file);
-            }
-            return file;
-        }
-    });
+    @Rule public JenkinsRule j = new JenkinsRule();
 
     @Before
     public void setUp() {
@@ -101,6 +92,8 @@ public class CompressArtifactsTest {
 
     @Test @Issue("JENKINS-26858")
     public void useSpecialCharsInPathName() throws Exception {
+        assumeFalse(Functions.isWindows());
+
         final String filename = "2017-03-21_04:25:03/x:y[z].txt";
 
         FreeStyleProject p = j.createFreeStyleProject();
@@ -151,6 +144,7 @@ public class CompressArtifactsTest {
 
     @Test @Issue("JENKINS-27042") @WithTimeout(0)
     public void archiveLargerThan4GInTotal() throws Exception {
+        assumeThat(System.getenv("CRAZY_BIG"), is("OK"));
         FreeStyleProject p = j.createFreeStyleProject();
         final int artifactCount = 700;
         p.getBuildersList().add(new TestBuilder() {
@@ -223,6 +217,7 @@ public class CompressArtifactsTest {
 
     @Test
     public void archiveSingleLargeFile() throws Exception {
+        assumeThat(System.getenv("CRAZY_BIG"), is("OK"));
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -251,24 +246,4 @@ public class CompressArtifactsTest {
         }
     }
 
-    // Stolen from https://github.com/jenkinsci/jenkins/commit/cb5845db29bea10afd26c4425a44bc569ee75a7a
-    // TODO delete when available in core version plugin depends on
-    private final class WorkspaceWriter extends TestBuilder {
-
-        private final String path;
-        private final String content;
-
-        public WorkspaceWriter(String path, String content) {
-            this.path = path;
-            this.content = content;
-        }
-
-        @Override
-        public boolean perform(
-                AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener
-        ) throws InterruptedException, IOException {
-            build.getWorkspace().child(path).write(content, "UTF-8");
-            return true;
-        }
-    }
 }

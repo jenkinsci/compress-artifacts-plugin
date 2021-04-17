@@ -25,6 +25,7 @@
 package org.jenkinsci.plugins.compress_artifacts;
 
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.BuildListener;
 import hudson.model.StreamBuildListener;
@@ -42,14 +43,16 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import jenkins.util.VirtualFile;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeFalse;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -149,6 +152,7 @@ public class ZipStorageTest {
         }
     }
     
+    @Deprecated
     @Test public void globList() throws Exception {
         FileUtils.writeStringToFile(new File(content, "top"), "top");
         File dir1 = new File(content, "folder1");
@@ -168,6 +172,7 @@ public class ZipStorageTest {
         doGlobList(canonical);
         doGlobList(zs);
     }
+    @Deprecated
 	private void doGlobList(VirtualFile vf) throws IOException {
         assertGlobList(vf, "**", "top", "folder1/file1.txt", "folder2/file2.log");
         assertGlobList(vf, "**/*.log", "folder2/file2.log");
@@ -176,13 +181,13 @@ public class ZipStorageTest {
         assertGlobList(child, "**", "file1.txt");
         assertGlobList(child, "*log");
         assertGlobList(child, "*.txt", "file1.txt");
-        // TODO canonical implementation yields all files including folders when null or empty glob passed; what is correct? (cf. 9c3be89)
 	}
+    @Deprecated
     private static void assertGlobList(VirtualFile vf, String glob, String... expected) throws IOException {
         Arrays.sort(expected);
         String[] actual = vf.list(glob);
         Arrays.sort(actual);
-        assertEquals(Arrays.asList(expected), Arrays.asList(actual));
+        assertEquals(new TreeSet<>(Arrays.asList(expected)), Arrays.stream(vf.list(glob)).map(r -> r.replace('\\', '/')).collect(Collectors.toSet()));
     }
 
     @Test public void readError() throws Exception {
@@ -199,18 +204,18 @@ public class ZipStorageTest {
     }
     private void doReadNonexistingDir(VirtualFile vf) {
         try {
-            vf.child("there_is_none").open();
-            fail();
+            VirtualFile child = vf.child("there_is_none");
+            fail("expected " + child + " to not exist but got: " + IOUtils.toString(child.open()));
         } catch (IOException ex) {
-            assertTrue(ex instanceof FileNotFoundException);
+            // good
         }
     }
-    private void doReadDir(VirtualFile vf) {
+    private void doReadDir(VirtualFile vf) throws IOException {
         try {
-            vf.list()[0].open();
-            fail();
+            VirtualFile child = vf.list()[0];
+            fail("expected " + child + " to be a directory but got: " + IOUtils.toString(child.open()));
         } catch (IOException ex) {
-            assertTrue(ex instanceof FileNotFoundException);
+            // good
         }
     }
 
@@ -322,6 +327,8 @@ public class ZipStorageTest {
 
     @Test
     public void specialCaracters() throws Exception {
+        assumeFalse(Functions.isWindows());
+
         String dirname = "Příliš_žluťoučký_kůň";
         String filename = "úpěl_ďábelské_ódy";
 

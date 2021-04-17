@@ -50,7 +50,6 @@ import jenkins.util.VirtualFile;
 
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.util.URIUtil;
-import org.apache.tools.ant.types.selectors.SelectorUtils;
 
 import de.schlichtherle.truezip.zip.ZipEntry;
 import de.schlichtherle.truezip.zip.ZipFile;
@@ -194,35 +193,6 @@ final class ZipStorage extends VirtualFile {
                 }
             }
             return files.toArray(new VirtualFile[files.size()]);
-        } finally {
-            zf.close();
-        }
-    }
-    
-    @Override public String[] list(String glob) throws IOException {
-        if (!looksLikeDir() || !archive.exists()) {
-            return new String[0];
-        }
-
-        // canonical implementation treats null glob the same as empty string
-        if (glob==null) {
-            glob="";
-        }
-
-        ZipFile zf = new ZipFile(archive);
-        try {
-            Set<String> files = new HashSet<String>();
-            Enumeration<? extends ZipEntry> entries = zf.entries();
-            while (entries.hasMoreElements()) {
-            	ZipEntry entry = entries.nextElement();
-            	if ((! entry.isDirectory()) && entry.getName().startsWith(path)) {
-            		String name = entry.getName().substring(path.length());
-            		if (SelectorUtils.match(glob, name)) {
-            			files.add(name);
-            		}
-            	}
-            }
-            return files.toArray(new String[files.size()]);
         } finally {
             zf.close();
         }
