@@ -11,7 +11,7 @@
     <version>${revision}${changelist}</version>
     <packaging>hpi</packaging>
     <name>Compress Artifacts Plugin</name>
-    <description>Keeps build artifacts compressed to save disk space on the master.</description>
+    <description>Keeps build artifacts compressed to save disk space on the controller.</description>
     <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
 
     <properties>
