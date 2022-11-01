@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<div>
+    Keeps build artifacts compressed to save disk space on the controller.
+</div>
