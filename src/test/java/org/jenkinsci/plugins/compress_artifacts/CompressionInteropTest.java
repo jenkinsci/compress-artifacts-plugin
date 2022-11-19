@@ -29,6 +29,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -88,7 +89,7 @@ public class CompressionInteropTest {
 
     @Test
     public void apacheZip() throws Exception {
-        File dst = File.createTempFile(getClass().getName(), "apacheZip");
+        File dst = Files.createTempFile(getClass().getName(), "apacheZip").toFile();
         final FileOutputStream fos = new FileOutputStream(dst);
         try {
             new FilePath(src.getRoot()).zip(fos, new FilePath.ExplicitlySpecifiedDirScanner(artifacts));
@@ -101,7 +102,7 @@ public class CompressionInteropTest {
 
     @Test
     public void trueZipIbm437() throws Exception {
-        File archive = File.createTempFile(getClass().getName(), "trueZip");
+        File archive = Files.createTempFile(getClass().getName(), "trueZip").toFile();
         File tempArchive = new File(archive.getAbsolutePath() + ".writing.zip");
 
         TFile zip = new TFile(tempArchive, new TArchiveDetector("zip"));
