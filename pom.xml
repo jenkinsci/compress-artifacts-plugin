@@ -16,7 +16,7 @@
 
     <properties>
         <changelist>999999-SNAPSHOT</changelist>
-        <jenkins.version>2.319.3</jenkins.version>
+        <jenkins.version>2.414.3</jenkins.version>
         <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
         <truezip.version>7.7.10</truezip.version>
         <!-- TODO fix violations -->
@@ -47,8 +47,8 @@
         <dependencies>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.319.x</artifactId>
-                <version>1654.vcb_69d035fa_20</version>
+                <artifactId>bom-2.414.x</artifactId>
+                <version>2977.vdf61ecb_fb_e2d</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -73,16 +73,6 @@
             <version>${truezip.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>commons-httpclient3-api</artifactId>
-            <version>3.1-3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>apache-httpcomponents-client-4-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-api</artifactId>
             <scope>test</scope>
@@ -96,7 +86,7 @@
         <dependency>
             <groupId>org.jenkins-ci.test</groupId>
             <artifactId>docker-fixtures</artifactId>
-            <version>166.v912b_95083ffe</version>
+            <version>190.vd6a_e600cb_775</version>
             <scope>test</scope>
         </dependency>
         <dependency>

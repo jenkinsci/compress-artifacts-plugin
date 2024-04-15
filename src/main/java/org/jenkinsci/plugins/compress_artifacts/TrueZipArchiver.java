@@ -25,7 +25,6 @@
 package org.jenkinsci.plugins.compress_artifacts;
 
 import hudson.util.FileVisitor;
-import hudson.util.IOUtils;
 import hudson.util.io.Archiver;
 import hudson.util.io.ArchiverFactory;
 
