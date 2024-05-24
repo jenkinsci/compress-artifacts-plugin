@@ -173,7 +173,7 @@ public class CompressArtifactsTest {
         assertThat(build.getArtifacts(), Matchers.<Run<FreeStyleProject, FreeStyleBuild>.Artifact>iterableWithSize(artifactCount));
         InputStream open = build.getArtifactManager().root().child("stuff" + (artifactCount - 1)).open();
         try {
-            IOUtils.copy(open, new NullOutputStream());
+            IOUtils.copy(open, OutputStream.nullOutputStream());
         } finally {
             open.close();
         }
