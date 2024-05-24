@@ -27,7 +27,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
 import static org.junit.Assert.assertEquals;
 
-import com.google.common.io.NullOutputStream;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
@@ -174,7 +173,7 @@ public class CompressArtifactsTest {
         assertThat(build.getArtifacts(), Matchers.<Run<FreeStyleProject, FreeStyleBuild>.Artifact>iterableWithSize(artifactCount));
         InputStream open = build.getArtifactManager().root().child("stuff" + (artifactCount - 1)).open();
         try {
-            IOUtils.copy(open, new NullOutputStream());
+            IOUtils.copy(open, OutputStream.nullOutputStream());
         } finally {
             open.close();
         }
@@ -240,7 +239,7 @@ public class CompressArtifactsTest {
         FreeStyleBuild build = j.buildAndAssertSuccess(p);
         InputStream out = build.getArtifactManager().root().child("out").open();
         try {
-            IOUtils.copy(out, new NullOutputStream());
+            IOUtils.copy(out, OutputStream.nullOutputStream());
         } finally {
              out.close();
         }

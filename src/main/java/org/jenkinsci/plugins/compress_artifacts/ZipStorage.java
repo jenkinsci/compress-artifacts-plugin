@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
@@ -48,8 +49,7 @@ import javax.annotation.Nonnull;
 
 import jenkins.util.VirtualFile;
 
-import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.util.URIUtil;
+import org.springframework.web.util.UriUtils;
 
 import de.schlichtherle.truezip.zip.ZipEntry;
 import de.schlichtherle.truezip.zip.ZipFile;
@@ -95,10 +95,8 @@ final class ZipStorage extends VirtualFile {
         try {
             // If no scheme is provided, beginning of the path is parsed as the scheme causing validation problems.
             // Using some scheme to workaround that + prepending prefix to avoid empty URI path.
-            return new URI("zip", "./" + URIUtil.encodePath(path), null);
+            return new URI("zip", "./" + UriUtils.encodePath(path, StandardCharsets.UTF_8), null);
         } catch (URISyntaxException x) {
-            throw new AssertionError(x);
-        } catch (URIException x) {
             throw new AssertionError(x);
         }
     }
