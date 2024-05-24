@@ -52,7 +52,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.WorkspaceWriter;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.NullOutputStream;
 import org.hamcrest.Matchers;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.*;
@@ -240,7 +239,7 @@ public class CompressArtifactsTest {
         FreeStyleBuild build = j.buildAndAssertSuccess(p);
         InputStream out = build.getArtifactManager().root().child("out").open();
         try {
-            IOUtils.copy(out, NullOutputStream.INSTANCE);
+            IOUtils.copy(out, OutputStream.nullOutputStream());
         } finally {
              out.close();
         }
