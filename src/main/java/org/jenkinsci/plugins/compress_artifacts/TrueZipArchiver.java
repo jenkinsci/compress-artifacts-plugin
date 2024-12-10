@@ -51,6 +51,10 @@ final /*pacakge*/ class TrueZipArchiver extends Archiver {
         zip = new ZipOutputStream(out, Charset.defaultCharset());
     }
 
+    /*package*/ TrueZipArchiver(OutputStream out, Charset filenamesEncoding) {
+        zip = new ZipOutputStream(out, filenamesEncoding);
+    }
+
     @Override
     public void visit(final File f, final String _relativePath) throws IOException {
         // int mode = IOUtils.mode(f); // TODO
@@ -100,6 +104,10 @@ final /*pacakge*/ class TrueZipArchiver extends Archiver {
         @Override
         public Archiver create(OutputStream out) throws IOException {
             return new TrueZipArchiver(out);
+        }
+        @Override
+        public Archiver create(OutputStream out, Charset filenamesEncoding) throws IOException {
+            return new TrueZipArchiver(out, filenamesEncoding);
         }
     }; 
 }

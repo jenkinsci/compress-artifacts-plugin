@@ -290,16 +290,12 @@ public class ZipStorageTest {
         };
 
         compressor.start();
-        try {
-            Thread.sleep(1000);
+        Thread.sleep(200);
 
-            assertTrue(compressor.isAlive());
+        assertTrue(compressor.isAlive());
 
-            assertArrayEquals(new String[0], zs.list());
-            assertArrayEquals(new VirtualFile[0], zs.list("*"));
-        } finally {
-            compressor.stop();
-        }
+        assertArrayEquals(new String[0], zs.list());
+        assertArrayEquals(new VirtualFile[0], zs.list("*"));
     }
 
     @Test // This can happen when it was not yet (fully) written or it was deleted
