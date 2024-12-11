@@ -1,8 +1,10 @@
-/* `buildPlugin` step provided by: https://github.com/jenkins-infra/pipeline-library */
+/*
+ See the documentation for more options:
+ https://github.com/jenkins-infra/pipeline-library/
+*/
 buildPlugin(
-  useContainerAgent: false,
+  useContainerAgent: false, // CompressingArtifactManagerFactoryTest use a container image
   configurations: [
-    [platform: 'linux', jdk: 11],
-    [platform: 'linux', jdk: 17],
-    [platform: 'windows', jdk: 11],
+    [platform: 'linux', jdk: 21],
+    [platform: 'windows', jdk: 17],
 ])
