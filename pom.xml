@@ -19,7 +19,6 @@
         <jenkins.baseline>2.452</jenkins.baseline>
         <jenkins.version>${jenkins.baseline}.4</jenkins.version>
         <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
-        <truezip.version>7.7.10</truezip.version>
         <!-- TODO fix violations -->
         <spotbugs.threshold>High</spotbugs.threshold>
     </properties>
@@ -57,26 +56,6 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>io.jenkins.plugins</groupId>
-            <artifactId>commons-compress-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>de.schlichtherle.truezip</groupId>
-            <artifactId>truezip-driver-zip</artifactId>
-            <version>${truezip.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-compress</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>de.schlichtherle.truezip</groupId>
-            <artifactId>truezip-file</artifactId>
-            <version>${truezip.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-api</artifactId>

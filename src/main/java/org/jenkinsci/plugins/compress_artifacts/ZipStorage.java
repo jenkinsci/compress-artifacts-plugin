@@ -27,6 +27,7 @@ package org.jenkinsci.plugins.compress_artifacts;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.BuildListener;
+import hudson.util.io.ArchiverFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -44,15 +45,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import javax.annotation.Nonnull;
 
 import jenkins.util.VirtualFile;
 
 import org.springframework.web.util.UriUtils;
-
-import de.schlichtherle.truezip.zip.ZipEntry;
-import de.schlichtherle.truezip.zip.ZipFile;
 
 final class ZipStorage extends VirtualFile {
 
@@ -67,7 +67,7 @@ final class ZipStorage extends VirtualFile {
 
         OutputStream os = new FileOutputStream(tempArchive);
         try {
-            workspace.archive(TrueZipArchiver.FACTORY, os, new FilePath.ExplicitlySpecifiedDirScanner(artifacts));
+            workspace.archive(ArchiverFactory.ZIP, os, new FilePath.ExplicitlySpecifiedDirScanner(artifacts));
         } finally {
             os.close();
         }
