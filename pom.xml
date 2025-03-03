@@ -35,13 +35,6 @@
         <url>https://github.com/${gitHubRepo}</url>
         <tag>${scmTag}</tag>
     </scm>
-    <developers>
-      <developer>
-        <id>olivergondza</id>
-        <name>Oliver Gondža</name>
-        <email>ogondza@gmail.com</email>
-      </developer>
-    </developers>
 
     <dependencyManagement>
         <dependencies>
